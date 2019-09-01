@@ -1,0 +1,18 @@
+{
+    "lessons": [
+        {
+            "name": "lesson1",
+            "entries": [
+                {
+                    "type": "gender",
+                    "word": "Gleichgewicht",
+                    "gender": "das"
+                },
+                {
+                    "type": "emphasis",
+                    "word": "*an*rufen"
+                }
+            ]
+        }
+    ]
+}

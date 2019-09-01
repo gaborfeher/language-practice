@@ -1,5 +1,101 @@
 <html>
-<body>
-    hello, world
+
+<link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
+
+<body class="text-6xl">
+    <div class="h-screen flex flex-col select-none">
+        <div id="header" class="flex-initial bg-gray-300 p-4">
+            loading...
+        </div>
+        <div id="arena" class="flex-grow bg-white pt-20">
+        </div>
+        <div class="flex-initial text-right bg-gray-300 p-4">
+            <button id="next" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Next</button>
+        </div>
+    </div>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.4.1.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+        var entries = [];
+        var currentEntryId;
+
+        function renderEntry(id) {
+            var entry = entries[id];
+            currentEntryId = id;
+            $('#header').html(`#${id + 1} - ${entry.lesson}`);
+            if (entry.type == 'gender') {
+                $('#arena').html(`
+<div class="text-center">${entry.word}</div>
+<div class="flex flex-center">
+    <button id="der" class="ddd flex-1 bg-blue-500 text-white font-bold py-2 px-4 rounded m-4">der</button>
+    <button id="die" class="ddd flex-1 bg-blue-500 text-white font-bold py-2 px-4 rounded m-4">die</button>
+    <button id="das" class="ddd flex-1 bg-blue-500 text-white font-bold py-2 px-4 rounded m-4">das</button>
+</div>
+`);
+                $('.ddd').on('click', function() {
+                    $('.ddd').removeClass('bg-blue-500').addClass('bg-gray-500');
+                    $('#' + (entry.gender)).removeClass('bg-gray-500').addClass('bg-green-500');
+                    if ($(this).attr('id') != entry.gender) {
+                        $(this).removeClass('bg-gray-500').addClass('bg-red-500');
+                    }
+                    $('.ddd').off('click');
+                });
+            } else if (entry.type == 'emphasis') {
+                var letters = [];
+                var inEmphasis = false;
+                for (var i = 0; i < entry.word.length; ++i) {
+                    if (entry.word[i] == '*') {
+                        inEmphasis = !inEmphasis;
+                    } else {
+                        letters.push({
+                            'ch': entry.word[i],
+                            'emph': inEmphasis,
+                        });
+                    }
+                }
+
+                $('#arena').html(`
+                    <div class="text-center font-mono">
+                        ${letters.map((letter, i) =>
+                            `<span class="letter ${letter.emph ? "yes-emph" : "no-emph"}">${letter.ch}</span>`).join('')
+                        }
+                    </div>`
+                );
+                $('.letter').on('click', function() {
+                    if ($(this).hasClass('yes-emph')) {
+                        $('.letter.yes-emph').addClass('bg-green-500 text-white');
+                    } else {
+                        $('.letter.yes-emph').addClass('text-green-500');
+                        $(this).addClass('bg-red-500 text-white');
+                    }
+                    $('.letter').off('click');
+                });
+            }
+        }
+
+        $.ajax('data.json')
+            .done(function(recvData) {
+                for (var lessonId = 0; lessonId < recvData.lessons.length; ++lessonId) {
+                    var lesson = recvData.lessons[lessonId];
+                    for (var entryId = 0; entryId < lesson.entries.length; ++entryId) {
+                        entry = lesson.entries[entryId];
+                        entry.lesson = lesson.name;
+                        entry.id = entries.length;
+                        entries.push(entry);
+                    }
+                }
+                renderEntry(0);
+            })
+            .fail(function() {
+                alert('sorry, cannot load data');
+            });
+
+        $('#next').on('click', function() {
+            var id = Math.floor(Math.random() * (entries.length - 1));
+            if (id == currentEntryId) {
+                id = (id + 1) % entries.length;
+            }
+            renderEntry(id);
+        });
+    </script>
 </body>
 </html>
